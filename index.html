@@ -144,7 +144,9 @@
       .panel{position:static;max-height:none}
       .board{min-height:720px}
     }
-    @media (max-width:768px){
+    
+    .mobile-panel-toggle{display:none}
+@media (max-width:768px){
       :root{ --rod-height:40px; }
       body{font-size:16px}
       header{padding:14px 14px 12px}
@@ -182,7 +184,7 @@
 </head>
 <body>
   <header>
-    <h1>Simulador de regletas y círculos de fracciones móvil</h1>
+    <h1>Simulador de regletas y círculos de fracciones</h1>
     <p>A la derecha tienes un panel fijo con dos representaciones: regletas y círculos de fracciones. Haz clic sobre cualquier pieza para crear una copia en el área de comparación y luego arrástrala al lugar que desees.</p>
   </header>
 
@@ -191,6 +193,7 @@
       <div class="toolbar">
         <div class="status" id="statusText">Haz clic en una pieza del panel derecho para llevar una copia al área de comparación.</div>
         <div class="small"><strong>Área de comparación:</strong> usa este espacio para comparar representaciones fraccionarias con regletas o con círculos.</div>
+        <button id="toggleSidePanel" class="mobile-panel-toggle" type="button">Ocultar panel</button>
       </div>
       <div class="board" id="board"></div>
     </section>
@@ -830,6 +833,27 @@
       updateStatus(showRods ? 'Modo regletas activo.' : 'Modo círculos activo.');
     }
 
+    const sidePanel = document.querySelector('.panel');
+    const toggleSidePanelBtn = document.getElementById('toggleSidePanel');
+
+    function updateSidePanelButton(){
+      if(window.innerWidth > 768){
+        toggleSidePanelBtn.textContent = 'Ocultar panel';
+        sidePanel.classList.remove('is-collapsed');
+        return;
+      }
+      toggleSidePanelBtn.textContent = sidePanel.classList.contains('is-collapsed') ? 'Mostrar panel' : 'Ocultar panel';
+    }
+
+    toggleSidePanelBtn.addEventListener('click', ()=>{
+      if(window.innerWidth <= 768){
+        sidePanel.classList.toggle('is-collapsed');
+        updateSidePanelButton();
+      }
+    });
+
+    window.addEventListener('resize', updateSidePanelButton);
+
     document.getElementById('clearBoard').addEventListener('click', clearBoard);
     showRodsBtn.addEventListener('click', ()=> setMode('rods'));
     showCirclesBtn.addEventListener('click', ()=> setMode('circles'));
@@ -868,6 +892,7 @@
     const maxDen = Number(maxDenSelect.value);
     buildRodLibrary(maxDen);
     buildCircleLibrary(maxDen);
+    updateSidePanelButton();
     setMode('rods');
   </script>
 </body>
