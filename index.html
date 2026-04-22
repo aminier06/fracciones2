@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Simulador de Regletas y Círculos de Fracciones</title>
+  <title>Simulador de Regletas y Círculos de Fracciones </title>
   <style>
     :root{
       --bg:#f6f8fb;
@@ -138,30 +138,69 @@
     .kbd{display:inline-block;border:1px solid #cbd5e1;background:rgba(255,255,255,0.4);border-radius:6px;padding:1px 6px;font-size:.85rem;color:#334155}
     .help-list{margin:8px 0 0 18px;padding:0;color:#475569}
     .help-list li{margin:4px 0}
+    .mobile-panel-toggle{display:none}
     footer{padding:8px 18px 18px;color:#64748b;font-size:.9rem;text-align:center}
     @media (max-width:1100px){
       .layout{grid-template-columns:1fr}
       .panel{position:static;max-height:none}
       .board{min-height:720px}
     }
-    
-    .mobile-panel-toggle{display:none}
-@media (max-width:768px){
+    @media (max-width:768px){
       :root{ --rod-height:40px; }
       body{font-size:16px}
       header{padding:14px 14px 12px}
       h1{font-size:1.2rem;line-height:1.2}
       header p{font-size:.95rem}
-      .layout{grid-template-columns:1fr;gap:12px;padding:10px}
+      .layout{
+        display:grid;
+        grid-template-columns:minmax(0,1fr) var(--mobile-panel-width, 220px);
+        gap:10px;
+        padding:10px;
+        align-items:start;
+      }
       .board-wrap,.panel{border-radius:14px}
-      .board-wrap{padding:10px}
-      .panel{padding:12px;order:-1}
-      .toolbar{flex-direction:column;align-items:stretch;margin-bottom:10px}
+      .board-wrap{
+        grid-column:1;
+        min-width:0;
+        padding:10px;
+      }
+      .panel{
+        grid-column:2;
+        padding:12px;
+        position:sticky;
+        top:10px;
+        max-height:calc(100vh - 20px);
+        overflow:auto;
+        width:var(--mobile-panel-width, 220px);
+        min-width:0;
+        margin:0;
+        transition:width .25s ease, padding .25s ease, border-width .25s ease, opacity .25s ease;
+      }
+      body.mobile-panel-collapsed .layout{
+        grid-template-columns:minmax(0,1fr) 0px;
+      }
+      body.mobile-panel-collapsed .panel{
+        width:0;
+        padding-left:0;
+        padding-right:0;
+        border-width:0;
+        opacity:0;
+        overflow:hidden;
+      }
+      .toolbar{
+        flex-direction:column;
+        align-items:stretch;
+        margin-bottom:10px;
+      }
       .status,.small{font-size:.92rem}
-      .board{min-height:58vh;border-radius:14px}
+      .board{min-height:68vh;border-radius:14px}
       .row{gap:10px;margin-bottom:10px}
       button, select{min-height:44px;padding:10px 12px;font-size:16px}
       button{flex:1 1 auto}
+      .mobile-panel-toggle{
+        display:block;
+        width:100%;
+      }
       select{width:100%}
       .row label.small{width:100%}
       .palette-guide{padding:10px}
@@ -184,7 +223,7 @@
 </head>
 <body>
   <header>
-    <h1>Simulador de regletas y círculos de fracciones móvil</h1>
+    <h1>Simulador de regletas y círculos de fracciones </h1>
     <p>A la derecha tienes un panel fijo con dos representaciones: regletas y círculos de fracciones. Haz clic sobre cualquier pieza para crear una copia en el área de comparación y luego arrástrala al lugar que desees.</p>
   </header>
 
@@ -232,7 +271,7 @@
         </div>
       </div>
 
-      <div class="small" style="margin-top:14px;"><strong>Cómo usarlo en móvil</strong></div>
+      <div class="small" style="margin-top:14px;"><strong>Cómo usarlo </strong></div>
       <ul class="help-list small">
         <li>Haz clic en cualquier pieza del panel derecho.</li>
         <li>La copia aparece en el tablero y puedes arrastrarla con el dedo.</li>
@@ -256,6 +295,8 @@
     const circlePanel = document.getElementById('circlePanel');
     const showRodsBtn = document.getElementById('showRods');
     const showCirclesBtn = document.getElementById('showCircles');
+    const toggleSidePanelBtn = document.getElementById('toggleSidePanel');
+
 
     const WHOLE = 840;
     const SNAP_DISTANCE = 22;
@@ -833,26 +874,31 @@
       updateStatus(showRods ? 'Modo regletas activo.' : 'Modo círculos activo.');
     }
 
-    const sidePanel = document.querySelector('.panel');
-    const toggleSidePanelBtn = document.getElementById('toggleSidePanel');
+    function applyMobilePanelState(){
+      if(window.innerWidth > 768){
+        document.body.classList.remove('mobile-panel-collapsed');
+      }
+      updateToggleButtonText();
+    }
 
-    function updateSidePanelButton(){
+    function updateToggleButtonText(){
       if(window.innerWidth > 768){
         toggleSidePanelBtn.textContent = 'Ocultar panel';
-        sidePanel.classList.remove('is-collapsed');
-        return;
+      } else {
+        toggleSidePanelBtn.textContent = document.body.classList.contains('mobile-panel-collapsed')
+          ? 'Mostrar panel'
+          : 'Ocultar panel';
       }
-      toggleSidePanelBtn.textContent = sidePanel.classList.contains('is-collapsed') ? 'Mostrar panel' : 'Ocultar panel';
     }
 
     toggleSidePanelBtn.addEventListener('click', ()=>{
       if(window.innerWidth <= 768){
-        sidePanel.classList.toggle('is-collapsed');
-        updateSidePanelButton();
+        document.body.classList.toggle('mobile-panel-collapsed');
+        updateToggleButtonText();
       }
     });
 
-    window.addEventListener('resize', updateSidePanelButton);
+    window.addEventListener('resize', applyMobilePanelState);
 
     document.getElementById('clearBoard').addEventListener('click', clearBoard);
     showRodsBtn.addEventListener('click', ()=> setMode('rods'));
@@ -892,7 +938,7 @@
     const maxDen = Number(maxDenSelect.value);
     buildRodLibrary(maxDen);
     buildCircleLibrary(maxDen);
-    updateSidePanelButton();
+    applyMobilePanelState();
     setMode('rods');
   </script>
 </body>
